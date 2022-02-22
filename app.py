@@ -1,15 +1,19 @@
-from flask import Flask, request, jsonify ,Response
+from flask import Flask, jsonify, request, Response
 from flask_pymongo import PyMongo
-from werkzeug.security import generate_password_hash, check_password_hash
 from bson import json_util
 from bson.objectid import ObjectId
 
+from werkzeug.security import generate_password_hash, check_password_hash
+
 app = Flask(__name__)
-app.config['MONGO_URI']= 'mongodb://localhost/pymongodb'
 
-mongo= PyMongo(app)
+app.secret_key = 'myawesomesecretkey'
 
-#create user
+app.config['MONGO_URI'] = 'mongodb://database/pythonmongodb'
+
+mongo = PyMongo(app)
+
+
 @app.route('/users', methods=['POST'])
 def create_user():
     # Receiving Data
@@ -31,15 +35,15 @@ def create_user():
         return response
     else:
         return not_found()
-        
-#get all users
+
+
 @app.route('/users', methods=['GET'])
 def get_users():
-    user = mongo.db.users.find()
-    response=json_util.dumps(user)
-    return Response(response, mimeype='application/json')
+    users = mongo.db.users.find()
+    response = json_util.dumps(users)
+    return Response(response, mimetype="application/json")
 
-#get user by id.
+
 @app.route('/users/<id>', methods=['GET'])
 def get_user(id):
     print(id)
@@ -47,7 +51,7 @@ def get_user(id):
     response = json_util.dumps(user)
     return Response(response, mimetype="application/json")
 
-#delete user by id.
+
 @app.route('/users/<id>', methods=['DELETE'])
 def delete_user(id):
     mongo.db.users.delete_one({'_id': ObjectId(id)})
@@ -55,7 +59,7 @@ def delete_user(id):
     response.status_code = 200
     return response
 
-#update user by id.
+
 @app.route('/users/<_id>', methods=['PUT'])
 def update_user(_id):
     username = request.json['username']
@@ -71,15 +75,17 @@ def update_user(_id):
     else:
       return not_found()
 
-#error handler.
+
 @app.errorhandler(404)
 def not_found(error=None):
-    response=jsonify({
-        'message': 'resource not found: '+ request.url,
+    message = {
+        'message': 'Resource Not Found ' + request.url,
         'status': 404
-    })
-    response.status_code =404
+    }
+    response = jsonify(message)
+    response.status_code = 404
     return response
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
+if __name__ == "__main__":
+    app.run(debug=True, port=3000)
