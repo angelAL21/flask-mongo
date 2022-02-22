@@ -12,21 +12,22 @@ mongo= PyMongo(app)
 #create user
 @app.route('/users', methods=['POST'])
 def create_user():
-    username= request.json['username']
-    email= request.json['email']
-    password= request.json['password']
-    
+    # Receiving Data
+    username = request.json['username']
+    email = request.json['email']
+    password = request.json['password']
+
     if username and email and password:
-        hashed_password=generate_password_hash(password)
-        id=mongo.db.users.insert(
-            {'username': username, 'email': email, 'password': hashed_password }
-        )
-        response={
-            'id': str(id),
+        hashed_password = generate_password_hash(password)
+        id = mongo.db.users.insert(
+            {'username': username, 'email': email, 'password': hashed_password})
+        response = jsonify({
+            '_id': str(id),
             'username': username,
-            'email': email,
-            'password': hashed_password
-        }
+            'password': password,
+            'email': email
+        })
+        response.status_code = 201
         return response
     else:
         return not_found()
