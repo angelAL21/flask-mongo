@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify ,Response
 from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson import json_util
+from bson.objectid import ObjectId
 
 app = Flask(__name__)
 app.config['MONGO_URI']= 'mongodb://localhost/pymongodb'
@@ -35,9 +36,26 @@ def create_user():
 def get_users():
     user = mongo.db.users.find()
     response=json_util.dumps(user)
-    return response(response, mimeype='application/json')
+    return Response(response, mimeype='application/json')
+
+#get user by id.
+@app.route('/users/<id>', methods=['GET'])
+def get_user(id):
+    print(id)
+    user = mongo.db.users.find_one({'_id': ObjectId(id), })
+    response = json_util.dumps(user)
+    return Response(response, mimetype="application/json")
+
+#delete user by id.
+@app.route('/users/<id>', methods=['DELETE'])
+def delete_user(id):
+    mongo.db.users.delete_one({'_id': ObjectId(id)})
+    response = jsonify({'message': 'User' + id + ' Deleted Successfully'})
+    response.status_code = 200
+    return response
 
 
+#error handler.
 @app.errorhandler(404)
 def not_found(error=None):
     response=jsonify({
