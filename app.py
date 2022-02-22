@@ -13,7 +13,6 @@ def create_user():
     email= request.json['email']
     password= request.json['password']
     
-    
     if username and email and password:
         hashed_password=generate_password_hash(password)
         id=mongo.db.users.insert(
@@ -27,11 +26,16 @@ def create_user():
         }
         return response
     else:
-        {'message': 'received'}
+        return not_found()
         
-    
-    return {'message': 'received'}
 
+@app.errorhandler(404)
+def not_found(error=None):
+    message={
+        'message': 'resource not found: '+ request.url,
+        'status': 404
+    }
+    return message
 
 if __name__ == '__main__':
     app.run(debug=True)
